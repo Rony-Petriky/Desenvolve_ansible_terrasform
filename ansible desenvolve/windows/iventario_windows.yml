@@ -1,0 +1,33 @@
+---
+- name: Instalando Apache MSI
+  hosts: windows
+
+  tasks:
+    - name: Download do Apache
+      win_get_url:
+        url: https://archive.apache.org/dist/httpd/binaries/win32/httpd-2.2.25-win32-x86-no_ssl.msi
+        dest: C:\Users\Administrator\Downloads\httpd-2.2.25-win32-x86-no_ssl.msi
+
+    - name: Instalando Apache MSI
+      win_package:
+        path: C:\Users\Administrator\Downloads\httpd-2.2.25-win32-x86-no_ssl.msi
+        state: present
+    - name: copiando arquivos do site jogo da velha
+      ansible.windows.win_copy:
+        src: /tmp/Jogo-da-Velha/
+        dest: C:\Program Files (x86)\Apache Software Foundation\Apache2.2\htdocs
+        remote_src: false
+    - name: copiando arquivos de configuraçao
+      ansible.windows.win_copy:
+        src: /tmp/httpd.conf
+        dest: C:\Program Files (x86)\Apache Software Foundation\Apache2.2\conf\httpd.conf
+        remote_src: false
+
+    - name: instalando httpd
+      win_command: cmd.exe /c cd \Program Files (x86)\Apache Software Foundation\Apache2.2\bin & httpd -k install
+
+    - name: Start serice Apache
+      ansible.windows.win_service:
+        name: Apache2.2
+        start_mode: auto
+        state: started
